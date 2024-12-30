@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'halaman_konfirmasi.dart'; // Import FormInput untuk navigasi
 
-class HalamanKeranjang extends StatelessWidget {
-  final List<Map<String, String>>
-      cartItems; // Menerima cartItems dari halaman sebelumnya
+class HalamanKeranjang extends StatefulWidget {
+  final List<Map<String, String>> cartItems;
 
   const HalamanKeranjang({super.key, required this.cartItems});
 
   @override
+  _HalamanKeranjangState createState() => _HalamanKeranjangState();
+}
+
+class _HalamanKeranjangState extends State<HalamanKeranjang> {
+  @override
   Widget build(BuildContext context) {
+    double totalPembelian = 0.0; // Variable to hold the total purchase value
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -21,38 +27,38 @@ class HalamanKeranjang extends StatelessWidget {
         backgroundColor: Colors.brown, // Set background color to brown
         foregroundColor: Colors.white, // Set text color to white
       ),
-      body: cartItems.isEmpty
-          ? Center(
-              child: const Text(
+      body: widget.cartItems.isEmpty
+          ? const Center(
+              child: Text(
                 'Keranjang Belanja Kosong!',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             )
           : Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
                   child: Text(
                     'Daftar Pesanan:',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown, // Set color to brown
+                      color: Colors.brown,
                     ),
                   ),
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: (cartItems.length / 10)
-                        .ceil(), // Set to display up to 10 items per card
+                    itemCount: (widget.cartItems.length / 10).ceil(),
                     itemBuilder: (context, index) {
                       final startIndex = index * 10;
-                      final endIndex = (startIndex + 10) > cartItems.length
-                          ? cartItems.length
-                          : startIndex + 10;
+                      final endIndex =
+                          (startIndex + 10) > widget.cartItems.length
+                              ? widget.cartItems.length
+                              : startIndex + 10;
 
                       final itemsForCard =
-                          cartItems.sublist(startIndex, endIndex);
+                          widget.cartItems.sublist(startIndex, endIndex);
 
                       return Card(
                         margin: const EdgeInsets.symmetric(
@@ -66,12 +72,21 @@ class HalamanKeranjang extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ...itemsForCard.map((item) {
+                                int quantity =
+                                    int.parse(item['quantity'] ?? '0');
+                                double harga =
+                                    double.parse(item['harga'] ?? '0');
+                                double totalItem = quantity *
+                                    harga; // Calculate total for this item
+                                totalPembelian +=
+                                    totalItem; // Add to total purchase value
+
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       item['nama_menu']!,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -83,8 +98,34 @@ class HalamanKeranjang extends StatelessWidget {
                                         color: Colors.grey[700],
                                       ),
                                     ),
-                                    const SizedBox(
-                                        height: 8), // Spacing between items
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.remove),
+                                          onPressed: () {
+                                            setState(() {
+                                              if (quantity > 1) {
+                                                quantity--;
+                                                item['quantity'] =
+                                                    quantity.toString();
+                                              }
+                                            });
+                                          },
+                                        ),
+                                        Text('$quantity'),
+                                        IconButton(
+                                          icon: const Icon(Icons.add),
+                                          onPressed: () {
+                                            setState(() {
+                                              quantity++;
+                                              item['quantity'] =
+                                                  quantity.toString();
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
                                   ],
                                 );
                               }).toList(),
@@ -92,22 +133,27 @@ class HalamanKeranjang extends StatelessWidget {
                           ),
                           trailing: ElevatedButton(
                             onPressed: () {
-                              // Navigasi ke FormInput dengan tombol Next
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => FormInput(
-                                    initialNamaMenu: itemsForCard[0][
-                                        'nama_menu'], // Pass the first menu in the card
+                                    initialNamaMenu: itemsForCard[0]
+                                        ['nama_menu'],
+                                    initialHarga: itemsForCard[0]['harga'],
+                                    initialQuantity: itemsForCard[0][
+                                        'quantity'], // Memastikan quantity dikirim
+                                    initialTotalPembelian:
+                                        totalPembelian.toStringAsFixed(
+                                            2), // Pass the total to the next page
                                   ),
                                 ),
                               );
                             },
-                            child: const Text('Next'),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              backgroundColor: Colors.brown, // Text color
+                              backgroundColor: Colors.brown,
                             ),
+                            child: const Text('Next'),
                           ),
                         ),
                       );

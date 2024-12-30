@@ -2,14 +2,24 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:rotigolovers_groupf/pages/halaman_struk.dart';
 import '../utils/restapi.dart';
 import '../utils/config.dart';
 import '../utils/rotigolovers_model.dart';
 
 class FormInput extends StatefulWidget {
   final String? initialNamaMenu;
+  final String? initialHarga;
+  final String? initialQuantity;
+  final String? initialTotalPembelian;
 
-  const FormInput({Key? key, this.initialNamaMenu}) : super(key: key);
+  const FormInput(
+      {Key? key,
+      this.initialNamaMenu,
+      this.initialHarga,
+      this.initialQuantity,
+      this.initialTotalPembelian})
+      : super(key: key);
 
   @override
   FormInputAddState createState() => FormInputAddState();
@@ -26,6 +36,7 @@ class FormInputAddState extends State<FormInput> {
   final nomor_meja = TextEditingController();
   final nama_pelanggan = TextEditingController();
   final total_pembelian = TextEditingController();
+  final harga = TextEditingController();
 
   late Future<DateTime?> selectDate;
 
@@ -37,6 +48,22 @@ class FormInputAddState extends State<FormInput> {
     if (widget.initialNamaMenu != null) {
       nama_menu.text = widget.initialNamaMenu!;
     }
+    if (widget.initialHarga != null) {
+      harga.text = widget.initialHarga!;
+    }
+    if (widget.initialQuantity != null) {
+      quantity.text = widget.initialQuantity!;
+    }
+    if (widget.initialTotalPembelian != null) {
+      total_pembelian.text = widget.initialTotalPembelian!;
+    }
+  }
+
+  // Method to format currency
+  String formatCurrency(String amount) {
+    final format = NumberFormat.simpleCurrency(locale: 'id_ID');
+    final parsedAmount = double.tryParse(amount) ?? 0;
+    return format.format(parsedAmount);
   }
 
   @override
@@ -45,11 +72,8 @@ class FormInputAddState extends State<FormInput> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text(
-          'Input',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          'Input Pesanan',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         backgroundColor: Colors.brown,
         foregroundColor: Colors.white,
@@ -57,76 +81,56 @@ class FormInputAddState extends State<FormInput> {
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            // Card 1 - Menu Details
-            Card(
-              margin: const EdgeInsets.all(16.0),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _buildTextField(nama_menu, 'Nama Menu'),
-                    _buildTextField(quantity, 'Quantity'),
-                    _buildDropdownField('Jenis', ['Hot', 'Ice'],
-                        (String? newValue) {
-                      setState(() {
-                        jenis = newValue!;
-                      });
-                    }, jenis),
-                  ],
-                ),
-              ),
+            _buildFormSection(
+              title: "Detail Menu",
+              children: [
+                _buildTextField(nama_menu, 'Nama Menu'),
+                _buildTextField(quantity, 'Quantity',
+                    keyboardType: TextInputType.number),
+                _buildDropdownField('Jenis', ['Hot', 'Ice'],
+                    (String? newValue) {
+                  setState(() {
+                    jenis = newValue!;
+                  });
+                }, jenis),
+                _buildTextField(harga, 'Harga',
+                    keyboardType: TextInputType.number, onChanged: (value) {
+                  // Format harga when the user enters the value
+                  harga.text = formatCurrency(value);
+                  harga.selection = TextSelection.fromPosition(
+                      TextPosition(offset: harga.text.length));
+                }),
+              ],
             ),
-            // Card 2 - Additional Information
-            Card(
-              margin: const EdgeInsets.all(16.0),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _buildTextField(tanggal, 'Tanggal', onTap: () {
-                      showDialogPicker(context);
-                    }),
-                    _buildTextField(notes, 'Notes'),
-                    _buildDropdownField('Nama Kasir', ['Kasir 1', 'Kasir 2'],
-                        (String? newValue) {
-                      setState(() {
-                        nama_kasir = newValue!;
-                      });
-                    }, nama_kasir),
-                    _buildTextField(nomor_meja, 'Nomor Meja'),
-                    _buildTextField(nama_pelanggan, 'Nama Pelanggan'),
-                  ],
-                ),
-              ),
+            _buildFormSection(
+              title: "Informasi Tambahan",
+              children: [
+                _buildTextField(tanggal, 'Tanggal', onTap: () {
+                  showDialogPicker(context);
+                }),
+                _buildTextField(notes, 'Notes'),
+                _buildDropdownField('Nama Kasir', ['Kasir 1', 'Kasir 2'],
+                    (String? newValue) {
+                  setState(() {
+                    nama_kasir = newValue!;
+                  });
+                }, nama_kasir),
+                _buildTextField(nomor_meja, 'Nomor Meja'),
+                _buildTextField(nama_pelanggan, 'Nama Pelanggan'),
+              ],
             ),
-            // Card 3 - Total Purchase
-            Card(
-              margin: const EdgeInsets.all(16.0),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _buildTextField(total_pembelian, 'Total Pembelian'),
-                  ],
-                ),
-              ),
+            _buildFormSection(
+              title: "Ringkasan Pembelian",
+              children: [
+                _buildTextField(total_pembelian, 'Total Pembelian',
+                    keyboardType: TextInputType.number, onChanged: (value) {
+                  // Format total_pembelian when the user enters the value
+                  total_pembelian.text = formatCurrency(value);
+                  total_pembelian.selection = TextSelection.fromPosition(
+                      TextPosition(offset: total_pembelian.text.length));
+                }),
+              ],
             ),
-            // Save Button
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: SizedBox(
@@ -134,20 +138,20 @@ class FormInputAddState extends State<FormInput> {
                 height: 45,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF6A4E23),
+                    backgroundColor: const Color(0xFF6A4E23),
                     elevation: 0,
                   ),
                   onPressed: () async {
-                    // Validasi input
-                    if (nama_menu.text.isEmpty || quantity.text.isEmpty) {
+                    if (nama_menu.text.isEmpty ||
+                        quantity.text.isEmpty ||
+                        harga.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content: Text(
-                              'Nama Menu dan Quantity tidak boleh kosong')));
+                              'Nama Menu, Quantity, dan Harga tidak boleh kosong')));
                       return;
                     }
 
                     try {
-                      // Pastikan parameter yang dikirim benar
                       List response = jsonDecode(await ds.insertRotigolovers(
                         appid,
                         nama_menu.text,
@@ -203,19 +207,22 @@ class FormInputAddState extends State<FormInput> {
   }
 
   Widget _buildTextField(TextEditingController controller, String hintText,
-      {VoidCallback? onTap}) {
+      {VoidCallback? onTap,
+      TextInputType keyboardType = TextInputType.text,
+      ValueChanged<String>? onChanged}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
-        keyboardType: TextInputType.text,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           border: OutlineInputBorder(),
           hintText: hintText,
-          fillColor: Color(0xFFFAEBD7),
+          fillColor: const Color(0xFFFAEBD7),
           filled: true,
         ),
         onTap: onTap,
+        onChanged: onChanged,
       ),
     );
   }
@@ -228,7 +235,7 @@ class FormInputAddState extends State<FormInput> {
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           hintText: label,
-          fillColor: Color(0xFFFAEBD7),
+          fillColor: const Color(0xFFFAEBD7),
           filled: true,
         ),
         value: currentValue,
@@ -239,6 +246,32 @@ class FormInputAddState extends State<FormInput> {
             child: Text(value),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildFormSection(
+      {required String title, required List<Widget> children}) {
+    return Card(
+      margin: const EdgeInsets.all(16.0),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+            ),
+            const SizedBox(height: 8.0),
+            ...children,
+          ],
+        ),
       ),
     );
   }
@@ -273,38 +306,5 @@ class FormInputAddState extends State<FormInput> {
         print(error);
       }
     });
-  }
-}
-
-class StrukPage extends StatelessWidget {
-  final RotigoloversModel transaksi;
-
-  StrukPage({required this.transaksi});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Struk Transaksi"),
-        backgroundColor: Color(0xFF6A4E23),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('Nama Menu: ${transaksi.nama_menu}'),
-            Text('Quantity: ${transaksi.quantity}'),
-            Text('Jenis: ${transaksi.jenis}'),
-            Text('Tanggal: ${transaksi.tanggal}'),
-            Text('Notes: ${transaksi.notes}'),
-            Text('Nama Kasir: ${transaksi.nama_kasir}'),
-            Text('Nomor Meja: ${transaksi.nomor_meja}'),
-            Text('Nama Pelanggan: ${transaksi.nama_pelanggan}'),
-            Text('Total Pembelian: ${transaksi.total_pembelian}'),
-          ],
-        ),
-      ),
-    );
   }
 }
