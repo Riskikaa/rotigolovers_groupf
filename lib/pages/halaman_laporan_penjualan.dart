@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'rotigolovers_model.dart';
-import 'restapi.dart';
-import 'config.dart';
+import '../utils/rotigolovers_model.dart';
+import '../utils/restapi.dart';
+import '../utils/config.dart';
 
 class RotigoloversLaporan extends StatefulWidget {
   const RotigoloversLaporan({Key? key}) : super(key: key);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:rotigolovers_groupf/halaman_keranjang.dart';
-import 'package:rotigolovers_groupf/halaman_laporan_penjualan.dart';
+import 'package:rotigolovers_groupf/pages/halaman_keranjang.dart';
+import 'package:rotigolovers_groupf/pages/halaman_laporan_penjualan.dart';
 import 'halaman_detail_menu.dart';
 
 void main() {
