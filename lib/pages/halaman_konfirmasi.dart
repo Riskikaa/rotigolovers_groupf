@@ -7,7 +7,7 @@ import '../utils/config.dart';
 import '../utils/rotigolovers_model.dart';
 
 class FormInput extends StatefulWidget {
-  final String? initialNamaMenu; // Tambahkan parameter untuk nama_menu
+  final String? initialNamaMenu;
 
   const FormInput({Key? key, this.initialNamaMenu}) : super(key: key);
 
@@ -34,7 +34,6 @@ class FormInputAddState extends State<FormInput> {
   @override
   void initState() {
     super.initState();
-    // Setel nilai nama_menu jika ada
     if (widget.initialNamaMenu != null) {
       nama_menu.text = widget.initialNamaMenu!;
     }
@@ -52,117 +51,152 @@ class FormInputAddState extends State<FormInput> {
             fontSize: 20,
           ),
         ),
-        backgroundColor: Colors.brown, // Set background color to brown
-        foregroundColor: Colors.white, // Set text color to white
+        backgroundColor: Colors.brown,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
-        child: Card(
-          margin: const EdgeInsets.all(16.0),
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _buildTextField(nama_menu, 'Nama Menu'),
-                _buildTextField(quantity, 'Quantity'),
-                _buildDropdownField('Jenis', ['Hot', 'Ice'],
-                    (String? newValue) {
-                  setState(() {
-                    jenis = newValue!;
-                  });
-                }, jenis),
-                _buildTextField(tanggal, 'Tanggal', onTap: () {
-                  showDialogPicker(context);
-                }),
-                _buildTextField(notes, 'Notes'),
-                _buildDropdownField('Nama Kasir', ['Kasir 1', 'Kasir 2'],
-                    (String? newValue) {
-                  setState(() {
-                    nama_kasir = newValue!;
-                  });
-                }, nama_kasir),
-                _buildTextField(nomor_meja, 'Nomor Meja'),
-                _buildTextField(nama_pelanggan, 'Nama Pelanggan'),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 45,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Color(0xFF6A4E23), // Brown color for button
-                        elevation: 0,
-                      ),
-                      onPressed: () async {
-                        // Validasi input
-                        if (nama_menu.text.isEmpty || quantity.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                              content: Text(
-                                  'Nama Menu dan Quantity tidak boleh kosong')));
-                          return; // Hentikan eksekusi jika ada input yang kosong
+        child: Column(
+          children: <Widget>[
+            // Card 1 - Menu Details
+            Card(
+              margin: const EdgeInsets.all(16.0),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildTextField(nama_menu, 'Nama Menu'),
+                    _buildTextField(quantity, 'Quantity'),
+                    _buildDropdownField('Jenis', ['Hot', 'Ice'],
+                        (String? newValue) {
+                      setState(() {
+                        jenis = newValue!;
+                      });
+                    }, jenis),
+                  ],
+                ),
+              ),
+            ),
+            // Card 2 - Additional Information
+            Card(
+              margin: const EdgeInsets.all(16.0),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildTextField(tanggal, 'Tanggal', onTap: () {
+                      showDialogPicker(context);
+                    }),
+                    _buildTextField(notes, 'Notes'),
+                    _buildDropdownField('Nama Kasir', ['Kasir 1', 'Kasir 2'],
+                        (String? newValue) {
+                      setState(() {
+                        nama_kasir = newValue!;
+                      });
+                    }, nama_kasir),
+                    _buildTextField(nomor_meja, 'Nomor Meja'),
+                    _buildTextField(nama_pelanggan, 'Nama Pelanggan'),
+                  ],
+                ),
+              ),
+            ),
+            // Card 3 - Total Purchase
+            Card(
+              margin: const EdgeInsets.all(16.0),
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildTextField(total_pembelian, 'Total Pembelian'),
+                  ],
+                ),
+              ),
+            ),
+            // Save Button
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: SizedBox(
+                width: double.infinity,
+                height: 45,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF6A4E23),
+                    elevation: 0,
+                  ),
+                  onPressed: () async {
+                    // Validasi input
+                    if (nama_menu.text.isEmpty || quantity.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              'Nama Menu dan Quantity tidak boleh kosong')));
+                      return;
+                    }
+
+                    try {
+                      // Pastikan parameter yang dikirim benar
+                      List response = jsonDecode(await ds.insertRotigolovers(
+                        appid,
+                        nama_menu.text,
+                        quantity.text,
+                        jenis,
+                        tanggal.text,
+                        notes.text,
+                        nama_kasir,
+                        nomor_meja.text,
+                        nama_pelanggan.text,
+                        total_pembelian.text,
+                      ));
+
+                      if (kDebugMode) {
+                        print(response);
+                      }
+
+                      List<RotigoloversModel> rotigolovers = response
+                          .map((e) => RotigoloversModel.fromJson(e))
+                          .toList();
+
+                      if (rotigolovers.length == 1) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StrukPage(
+                              transaksi: rotigolovers.first,
+                            ),
+                          ),
+                        );
+                      } else {
+                        if (kDebugMode) {
+                          print("Error response: $response");
                         }
-
-                        try {
-                          // Pastikan parameter yang dikirim benar
-                          List response =
-                              jsonDecode(await ds.insertRotigolovers(
-                            appid,
-                            nama_menu.text,
-                            quantity.text,
-                            jenis,
-                            tanggal.text,
-                            notes.text,
-                            nama_kasir,
-                            nomor_meja.text,
-                            nama_pelanggan.text,
-                            total_pembelian.text,
-                          ));
-
-                          if (kDebugMode) {
-                            print(response); // Debug response
-                          }
-
-                          List<RotigoloversModel> rotigolovers = response
-                              .map((e) => RotigoloversModel.fromJson(e))
-                              .toList();
-
-                          if (rotigolovers.length == 1) {
-                            // Menavigasi ke halaman struk setelah berhasil simpan
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StrukPage(
-                                  transaksi: rotigolovers.first,
-                                ),
-                              ),
-                            );
-                          } else {
-                            if (kDebugMode) {
-                              print("Error response: $response"); // Log error
-                            }
-                          }
-                        } catch (e) {
-                          if (kDebugMode) {
-                            print("Error: $e"); // Tangani kesalahan
-                          }
-                        }
-                      },
-                      child: const Text(
-                        "SAVE",
-                        style: TextStyle(
-                            color: Colors.white), // Adjusted text color
-                      ),
-                    ),
+                      }
+                    } catch (e) {
+                      if (kDebugMode) {
+                        print("Error: $e");
+                      }
+                    }
+                  },
+                  child: const Text(
+                    "SAVE",
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -178,7 +212,7 @@ class FormInputAddState extends State<FormInput> {
         decoration: InputDecoration(
           border: OutlineInputBorder(),
           hintText: hintText,
-          fillColor: Color(0xFFFAEBD7), // Light brown for background color
+          fillColor: Color(0xFFFAEBD7),
           filled: true,
         ),
         onTap: onTap,
@@ -194,7 +228,7 @@ class FormInputAddState extends State<FormInput> {
         decoration: InputDecoration(
           border: const OutlineInputBorder(),
           hintText: label,
-          fillColor: Color(0xFFFAEBD7), // Light brown for background color
+          fillColor: Color(0xFFFAEBD7),
           filled: true,
         ),
         value: currentValue,
@@ -252,7 +286,7 @@ class StrukPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Struk Transaksi"),
-        backgroundColor: Color(0xFF6A4E23), // Brown color for AppBar
+        backgroundColor: Color(0xFF6A4E23),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

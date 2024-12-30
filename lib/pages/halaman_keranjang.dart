@@ -43,35 +43,52 @@ class HalamanKeranjang extends StatelessWidget {
                 ),
                 Expanded(
                   child: ListView.builder(
-                    itemCount: cartItems.length,
+                    itemCount: (cartItems.length / 10)
+                        .ceil(), // Set to display up to 10 items per card
                     itemBuilder: (context, index) {
-                      final item = cartItems[index];
+                      final startIndex = index * 10;
+                      final endIndex = (startIndex + 10) > cartItems.length
+                          ? cartItems.length
+                          : startIndex + 10;
+
+                      final itemsForCard =
+                          cartItems.sublist(startIndex, endIndex);
+
                       return Card(
                         margin: const EdgeInsets.symmetric(
                             vertical: 8, horizontal: 16),
-                        elevation:
-                            5, // Add some shadow to the card for a raised effect
+                        elevation: 5,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              12), // Rounded corners for the card
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
-                          leading: Icon(Icons.shopping_cart,
-                              color: Colors.brown), // Add an icon
-                          title: Text(
-                            item['nama_menu']!,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Harga: Rp ${item['harga']}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors
-                                  .grey[700], // Lighter gray color for price
-                            ),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...itemsForCard.map((item) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['nama_menu']!,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Harga: Rp ${item['harga']}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height: 8), // Spacing between items
+                                  ],
+                                );
+                              }).toList(),
+                            ],
                           ),
                           trailing: ElevatedButton(
                             onPressed: () {
@@ -80,8 +97,8 @@ class HalamanKeranjang extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => FormInput(
-                                    initialNamaMenu: item[
-                                        'nama_menu'], // You can pass the menu name if needed
+                                    initialNamaMenu: itemsForCard[0][
+                                        'nama_menu'], // Pass the first menu in the card
                                   ),
                                 ),
                               );

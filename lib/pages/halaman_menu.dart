@@ -87,6 +87,51 @@ class _RotigoloversListState extends State<RotigoloversList> {
           ),
         ),
         backgroundColor: Colors.brown,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            color: Colors.white,
+            onPressed: () {
+              // Logika logout, misalnya kembali ke halaman login
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text("Logout"),
+                    content: const Text("Apakah Anda yakin ingin logout?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Tutup dialog
+                        },
+                        child: const Text("Batal"),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.brown),
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const MyApp(), // Ubah ke halaman login Anda
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Logout",
+                          style: TextStyle(
+                            color: Colors
+                                .white, // Mengubah warna tulisan menjadi putih
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
